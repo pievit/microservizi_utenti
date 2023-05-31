@@ -1,0 +1,37 @@
+version: '1'
+
+services:
+  db-users:
+    container_name: db-users
+    image: postgres:alpine
+    network_mode: bridge
+    ports:
+      - "5431:5431"
+    expose:
+      - "5431"
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    command: -p 5431
+  microservizi_utenti:
+    image: pievit/microservizi-utenti
+    network_mode: bridge
+    stdin_open: true
+    tty: true
+    build:
+      context: .
+    container_name: microservizi-utenti
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://172.17.0.3:5431/db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      RABBITMQ_HOST: 172.17.0.6
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db-users
